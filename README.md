@@ -8,7 +8,7 @@ These instructions wil help you configure your local development environment to 
 
 ## Pre-requisites :clipboard:
 
-+ Node version 16 -> We recommend using **nvm** (Node version manager)
++ Node
 + An emulator for mobile, or a mobile device with the Expo Go app installed
 
 ## Setting up the project 🔧
