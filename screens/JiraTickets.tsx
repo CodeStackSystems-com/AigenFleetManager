@@ -330,7 +330,7 @@ const JiraTickets = () => {
                       fontFamily: "sans-serif",
                       fontWeight: "bold",
                       fontSize: 20,
-                      color: "#000",
+                      color: "#fff",
                       textAlign: "center",
                     }}
                   >
