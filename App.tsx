@@ -5,9 +5,17 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import Home from "./screens/Home"; // Update this to match your actual file
 import JiraTickets from "./screens/JiraTickets";
+import {NativeModules, Button} from 'react-native';
 
 const Stack = createStackNavigator();
+const {RobotManager} = NativeModules;
+const NewModuleButton = () => {
+  const onPress = async () => {
+    const data = await RobotManager.getRobotHeartbeat();
 
+    console.log(`${data}`);
+  };
+};
 const App = () => {
   return (
     <NavigationContainer>
