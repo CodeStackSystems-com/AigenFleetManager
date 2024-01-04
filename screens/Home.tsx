@@ -12,7 +12,7 @@ const Home = () => {
   return (
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text>Home</Text>
-      <Button title="Go to JiraTickets" onPress={goToJiraTickets} />
+      <Button title="Go to Jira Tickets" onPress={goToJiraTickets} />
     </View>
   );
 };
