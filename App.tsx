@@ -13,7 +13,11 @@ const App = () => {
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
         <Stack.Screen name="Home" component={Home as React.ComponentType} />
-        <Stack.Screen name="JiraTickets" component={JiraTickets} />
+        <Stack.Screen
+          name="JiraTickets"
+          component={JiraTickets}
+          options={{ title: "Jira Tickets" }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
