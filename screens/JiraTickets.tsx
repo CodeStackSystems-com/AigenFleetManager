@@ -6,6 +6,10 @@ import {
   TextInput,
   Animated,
   Easing,
+  KeyboardAvoidingView,
+  Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { TouchableOpacity } from "react-native-gesture-handler";
@@ -33,9 +37,35 @@ const JiraTickets = () => {
     fru: "",
   });
 
+  const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
+
+  const keyboardAvoidingContainer = {
+    marginTop: isKeyboardVisible ? -45 : 0,
+  };
+
   const [isDataValid, setIsDataValid] = React.useState(false);
 
   const backgroundColor = React.useRef(new Animated.Value(0)).current;
+
+  React.useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   React.useEffect(() => {
     // Define the colors
@@ -88,118 +118,239 @@ const JiraTickets = () => {
   };
 
   return (
-    <View style={styles.container}>
-      {/* Left Column */}
-      <View style={styles.leftColumn}>
-        <Text style={styles.log}>Log an Issue</Text>
-        {/* Container for the two columns inside the left column */}
-        <View style={{ flex: 1, flexDirection: "row" }}>
-          {/* Left Column inside left column */}
-          <View style={styles.leftLabels}>
-            <Text style={styles.text}>Robot ID</Text>
-            <Text style={styles.text}>Field ID</Text>
-            <Text style={styles.text}>Issue</Text>
-            <Text style={styles.text}>Description</Text>
-          </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+      <View style={styles.container}>
+        {/* Left Column */}
 
-          {/* Right Column inside left column */}
-          <View style={styles.leftInputs}>
-            <TextInput
-              style={styles.input}
-              onChangeText={(text) => setData({ ...data, robotID: text })}
-              value={data.robotID}
-            />
-            <TextInput
-              style={styles.input}
-              onChangeText={(text) => setData({ ...data, fieldID: text })}
-              value={data.fieldID}
-            />
-            <TextInput
-              style={styles.input}
-              onChangeText={(text) => setData({ ...data, issue: text })}
-              value={data.issue}
-            />
-            <TextInput
-              style={styles.descInput}
-              multiline
-              numberOfLines={4} // Set the number of lines you want to display
-              textAlignVertical="top"
-              onChangeText={(text) => setData({ ...data, description: text })}
-              value={data.description}
-            />
+        <View style={styles.leftColumn}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : "height"}
+            style={keyboardAvoidingContainer}
+          ></KeyboardAvoidingView>
+          <Text
+            style={
+              isKeyboardVisible
+                ? {
+                    color: "#D9D9D9",
+                    fontSize: 30,
+                    alignSelf: "center",
+                    marginTop: 20,
+                    marginBottom: -25,
+                  }
+                : styles.log
+            }
+          >
+            Log an Issue
+          </Text>
+
+          {/* Container for the two columns inside the left column */}
+          <View style={{ flex: 1, flexDirection: "row" }}>
+            {/* Left Column inside left column */}
+
+            <View style={styles.leftLabels}>
+              <Text style={styles.text}>Robot ID</Text>
+              <Text style={styles.text}>Field ID</Text>
+              <Text style={styles.text}>Issue</Text>
+              <Text style={styles.text}>Description</Text>
+            </View>
+
+            {/* Right Column inside left column */}
+
+            <View style={styles.leftInputs}>
+              <TextInput
+                style={styles.input}
+                onChangeText={(text) => setData({ ...data, robotID: text })}
+                value={data.robotID}
+              />
+              <TextInput
+                style={styles.input}
+                onChangeText={(text) => setData({ ...data, fieldID: text })}
+                value={data.fieldID}
+              />
+              <TextInput
+                style={styles.input}
+                onChangeText={(text) => setData({ ...data, issue: text })}
+                value={data.issue}
+              />
+              <TextInput
+                style={styles.descInput}
+                multiline
+                numberOfLines={4} // Set the number of lines you want to display
+                textAlignVertical="top"
+                onChangeText={(text) => setData({ ...data, description: text })}
+                value={data.description}
+              />
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Right Column */}
-      <View style={styles.rightColumn}>
-        {/* Container for the two columns inside the right column */}
-        <View
-          style={{
-            flex: 1,
-            flexDirection: "row",
-          }}
-        >
-          {/* Left Column inside right column */}
-          <View style={styles.rightLabels}>
-            <Text style={styles.rightText}>Issue Type</Text>
-            {/* If issue type is HW Issue, show hw replaced label */}
-            <View>
-              {data.issueType === "HW Issue" ? (
-                <Text style={styles.rightText}>HW Replaced?</Text>
-              ) : null}
+        {/* Right Column */}
+        <View style={styles.rightColumn}>
+          {/* Container for the two columns inside the right column */}
+          <View
+            style={{
+              flex: 1,
+              flexDirection: "row",
+            }}
+          >
+            {/* Left Column inside right column */}
+            <View style={styles.rightLabels}>
+              <Text style={styles.rightText}>Issue Type</Text>
+              {/* If issue type is HW Issue, show hw replaced label */}
+              <View>
+                {data.issueType === "HW Issue" ? (
+                  <Text style={styles.rightText}>HW Replaced?</Text>
+                ) : null}
+              </View>
+              {/* If HW Replaced is yes, show FRU */}
+              <View>
+                {data.hwReplaced === "Yes" ? (
+                  <Text style={styles.rightText}>FRU</Text>
+                ) : null}
+              </View>
+              <Text style={styles.rightText}>Recovered?</Text>
             </View>
-            {/* If HW Replaced is yes, show FRU */}
-            <View>
-              {data.hwReplaced === "Yes" ? (
-                <Text style={styles.rightText}>FRU</Text>
-              ) : null}
-            </View>
-            <Text style={styles.rightText}>Recovered?</Text>
-          </View>
 
-          {/* Right Column inside right column */}
-          <View style={styles.rightInputs}>
-            <Picker
-              selectedValue={data.issueType}
-              style={styles.dropdown}
-              onValueChange={(itemValue: string) =>
-                handleIssueChange(itemValue)
-              }
-            >
-              <Picker.Item
-                label="Select option"
-                value="Select option"
-                style={styles.option}
-                enabled={false}
-              />
-              {/* Placeholder */}
-              <Picker.Item
-                label="Stuck/Obstacle"
-                value="Stuck/Obstacle"
-                style={styles.option}
-              />
-              <Picker.Item
-                label="HW Issue"
-                value="HW Issue"
-                style={styles.option}
-              />
-              <Picker.Item
-                label="Suspected SW"
-                value="Suspected SW"
-                style={styles.option}
-              />
-            </Picker>
+            {/* Right Column inside right column */}
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+              <View style={styles.rightInputs}>
+                <Picker
+                  selectedValue={data.issueType}
+                  style={styles.dropdown}
+                  onValueChange={(itemValue: string) =>
+                    handleIssueChange(itemValue)
+                  }
+                >
+                  <Picker.Item
+                    label="Select option"
+                    value="Select option"
+                    style={styles.option}
+                    enabled={false}
+                  />
+                  {/* Placeholder */}
+                  <Picker.Item
+                    label="Stuck/Obstacle"
+                    value="Stuck/Obstacle"
+                    style={styles.option}
+                  />
+                  <Picker.Item
+                    label="HW Issue"
+                    value="HW Issue"
+                    style={styles.option}
+                  />
+                  <Picker.Item
+                    label="Suspected SW"
+                    value="Suspected SW"
+                    style={styles.option}
+                  />
+                </Picker>
 
-            {/* If issue type is HW Issue, show hw replaced picker */}
+                {/* If issue type is HW Issue, show hw replaced picker */}
 
-            <View>
-              {data.issueType === "HW Issue" ? (
+                <View>
+                  {data.issueType === "HW Issue" ? (
+                    <Picker
+                      style={styles.dropdown}
+                      selectedValue={data.hwReplaced}
+                      onValueChange={(itemValue: string, itemIndex: number) => {
+                        setData({ ...data, hwReplaced: itemValue });
+                      }}
+                    >
+                      <Picker.Item
+                        label="Select option"
+                        value="Select option"
+                        style={styles.option}
+                        enabled={false}
+                      />
+                      <Picker.Item
+                        label="Yes"
+                        value="Yes"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="No"
+                        value="No"
+                        style={styles.option}
+                      />
+                    </Picker>
+                  ) : null}
+                </View>
+
+                {/* If HW Replaced is yes, show FRU dropdown */}
+                <View>
+                  {data.hwReplaced === "Yes" ? (
+                    <Picker
+                      style={styles.dropdown}
+                      selectedValue={data.fru}
+                      onValueChange={(itemValue: string) =>
+                        setData({ ...data, fru: itemValue })
+                      }
+                    >
+                      <Picker.Item
+                        label="Select option"
+                        value="Select option"
+                        style={styles.option}
+                        enabled={false}
+                      />
+                      <Picker.Item
+                        label="Arm Assembly"
+                        value="Arm Assembly"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Arm tip"
+                        value="Arm tip"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Battery"
+                        value="Battery"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Central enclosure"
+                        value="Central enclosure"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Harness"
+                        value="Harness"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Payload"
+                        value="Payload"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Side assembly"
+                        value="Side assembly"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Solar assembly"
+                        value="Solar assembly"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Wheels with motors"
+                        value="Wheels with motors"
+                        style={styles.option}
+                      />
+                      <Picker.Item
+                        label="Other"
+                        value="Other"
+                        style={styles.option}
+                      />
+                    </Picker>
+                  ) : null}
+                </View>
+
                 <Picker
                   style={styles.dropdown}
-                  selectedValue={data.hwReplaced}
+                  selectedValue={data.recovered}
                   onValueChange={(itemValue: string) =>
-                    setData({ ...data, hwReplaced: itemValue })
+                    setData({ ...data, recovered: itemValue })
                   }
                 >
                   <Picker.Item
@@ -211,138 +362,51 @@ const JiraTickets = () => {
                   <Picker.Item label="Yes" value="Yes" style={styles.option} />
                   <Picker.Item label="No" value="No" style={styles.option} />
                 </Picker>
-              ) : null}
-            </View>
 
-            {/* If HW Replaced is yes, show FRU dropdown */}
-            <View>
-              {data.hwReplaced === "Yes" ? (
-                <Picker
-                  style={styles.dropdown}
-                  selectedValue={data.fru}
-                  onValueChange={(itemValue: string) =>
-                    setData({ ...data, fru: itemValue })
-                  }
-                >
-                  <Picker.Item
-                    label="Select option"
-                    value="Select option"
-                    style={styles.option}
-                    enabled={false}
-                  />
-                  <Picker.Item
-                    label="Arm Assembly"
-                    value="Arm Assembly"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Arm tip"
-                    value="Arm tip"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Battery"
-                    value="Battery"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Central enclosure"
-                    value="Central enclosure"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Harness"
-                    value="Harness"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Payload"
-                    value="Payload"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Side assembly"
-                    value="Side assembly"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Solar assembly"
-                    value="Solar assembly"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Wheels with motors"
-                    value="Wheels with motors"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Other"
-                    value="Other"
-                    style={styles.option}
-                  />
-                </Picker>
-              ) : null}
-            </View>
+                <View>
+                  {/* rest of the code */}
 
-            <Picker
-              style={styles.dropdown}
-              selectedValue={data.recovered}
-              onValueChange={(itemValue: string) =>
-                setData({ ...data, recovered: itemValue })
-              }
-            >
-              <Picker.Item
-                label="Select option"
-                value="Select option"
-                style={styles.option}
-                enabled={false}
-              />
-              <Picker.Item label="Yes" value="Yes" style={styles.option} />
-              <Picker.Item label="No" value="No" style={styles.option} />
-            </Picker>
-
-            <View>
-              {/* rest of the code */}
-
-              <Animated.View
-                style={{
-                  backgroundColor: backgroundColor.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: ["#D9D9D9", "#FF8A00"],
-                  }),
-                  width: 150,
-                  height: 60,
-                  borderRadius: 10,
-                  alignSelf: "center",
-                  marginTop: 50,
-                  justifyContent: "center",
-                }}
-              >
-                <TouchableOpacity
-                  onPress={() => {
-                    // Handle button press
-                    // This is where you can add logic to submit the form or perform other actions
-                    console.log(isDataValid);
-                  }}
-                >
-                  <Text
+                  <Animated.View
                     style={{
-                      fontFamily: "sans-serif",
-                      fontWeight: "bold",
-                      fontSize: 20,
-                      color: "#fff",
-                      textAlign: "center",
+                      backgroundColor: backgroundColor.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ["#D9D9D9", "#FF8A00"],
+                      }),
+                      width: 150,
+                      height: 60,
+                      borderRadius: 10,
+                      alignSelf: "center",
+                      marginTop: 50,
+                      justifyContent: "center",
                     }}
                   >
-                    Submit
-                  </Text>
-                </TouchableOpacity>
-              </Animated.View>
-            </View>
+                    <TouchableOpacity
+                      onPress={() => {
+                        // Handle button press
+                        // This is where you can add logic to submit the form or perform other actions
+                        console.log(isDataValid);
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "sans-serif",
+                          fontWeight: "bold",
+                          fontSize: 20,
+                          color: "#fff",
+                          textAlign: "center",
+                        }}
+                      >
+                        Submit
+                      </Text>
+                    </TouchableOpacity>
+                  </Animated.View>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
         </View>
       </View>
-    </View>
+    </TouchableWithoutFeedback>
   );
 };
 
