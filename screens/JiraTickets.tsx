@@ -384,7 +384,6 @@ const JiraTickets = () => {
                       onPress={() => {
                         // Handle button press
                         // This is where you can add logic to submit the form or perform other actions
-                        console.log(isDataValid);
                       }}
                     >
                       <Text
@@ -454,7 +453,7 @@ const styles = StyleSheet.create({
   },
   input: {
     height: 40,
-    width: 300,
+    width: 250,
     borderWidth: 1,
     color: "#000",
     backgroundColor: "#D9D9D9",
@@ -465,7 +464,7 @@ const styles = StyleSheet.create({
   },
   shrinkedInput: {
     height: 40,
-    width: 300,
+    width: 250,
     borderWidth: 1,
     color: "#000",
     backgroundColor: "#D9D9D9",
@@ -476,7 +475,7 @@ const styles = StyleSheet.create({
   },
   descInput: {
     height: 100,
-    width: 300,
+    width: 250,
     borderWidth: 1,
     color: "#000",
     backgroundColor: "#D9D9D9",
@@ -488,7 +487,7 @@ const styles = StyleSheet.create({
   },
   shrinkedDesc: {
     height: 100,
-    width: 300,
+    width: 250,
     borderWidth: 1,
     color: "#000",
     backgroundColor: "#D9D9D9",
