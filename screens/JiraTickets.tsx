@@ -40,7 +40,7 @@ const JiraTickets = () => {
   const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
 
   const keyboardAvoidingContainer = {
-    marginTop: isKeyboardVisible ? -45 : 0,
+    marginTop: isKeyboardVisible ? -110 : 0,
   };
 
   const [isDataValid, setIsDataValid] = React.useState(false);
@@ -148,32 +148,32 @@ const JiraTickets = () => {
             {/* Left Column inside left column */}
 
             <View style={styles.leftLabels}>
-              <Text style={styles.text}>Robot ID</Text>
-              <Text style={styles.text}>Field ID</Text>
-              <Text style={styles.text}>Issue</Text>
-              <Text style={styles.text}>Description</Text>
+              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Robot ID</Text>
+              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Field ID</Text>
+              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Issue</Text>
+              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Description</Text>
             </View>
 
             {/* Right Column inside left column */}
 
             <View style={styles.leftInputs}>
               <TextInput
-                style={styles.input}
+                style={isKeyboardVisible ? styles.shrinkedInput : styles.input}
                 onChangeText={(text) => setData({ ...data, robotID: text })}
                 value={data.robotID}
               />
               <TextInput
-                style={styles.input}
+                style={isKeyboardVisible ? styles.shrinkedInput : styles.input}
                 onChangeText={(text) => setData({ ...data, fieldID: text })}
                 value={data.fieldID}
               />
               <TextInput
-                style={styles.input}
+                style={isKeyboardVisible ? styles.shrinkedInput : styles.input}
                 onChangeText={(text) => setData({ ...data, issue: text })}
                 value={data.issue}
               />
               <TextInput
-                style={styles.descInput}
+                style={isKeyboardVisible ? styles.shrinkedDesc : styles.descInput}
                 multiline
                 numberOfLines={4} // Set the number of lines you want to display
                 textAlignVertical="top"
@@ -434,6 +434,11 @@ const styles = StyleSheet.create({
     fontSize: 25,
     paddingBottom: 30,
   },
+  shrinkedText: {
+    color: "#fff",
+    fontSize: 25,
+    paddingBottom: 15,
+  },
   log: {
     color: "#D9D9D9",
     fontSize: 30,
@@ -458,6 +463,17 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     fontSize: 20,
   },
+  shrinkedInput: {
+    height: 40,
+    width: 300,
+    borderWidth: 1,
+    color: "#000",
+    backgroundColor: "#D9D9D9",
+    borderRadius: 10,
+    marginBottom: 10,
+    paddingLeft: 10,
+    fontSize: 20,
+  },
   descInput: {
     height: 100,
     width: 300,
@@ -466,6 +482,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#D9D9D9",
     borderRadius: 10,
     marginBottom: 22.5,
+    paddingLeft: 10,
+    fontSize: 20,
+    paddingTop: 10,
+  },
+  shrinkedDesc: {
+    height: 100,
+    width: 300,
+    borderWidth: 1,
+    color: "#000",
+    backgroundColor: "#D9D9D9",
+    borderRadius: 10,
+    marginBottom: 10,
     paddingLeft: 10,
     fontSize: 20,
     paddingTop: 10,
