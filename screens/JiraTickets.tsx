@@ -27,8 +27,8 @@ interface Data {
 
 const JiraTickets = () => {
   const [data, setData] = React.useState<Data>({
-    robotID: "",
-    fieldID: "",
+    robotID: "", // Add data from heartbeat here
+    fieldID: "", // Add data from heartbeat here
     issue: "",
     description: "",
     issueType: "",
@@ -159,12 +159,12 @@ const JiraTickets = () => {
             <View style={styles.leftInputs}>
               <TextInput
                 style={styles.input}
-                onChangeText={(text) => setData({ ...data, robotID: text })}
+                onChangeText={(text) => setData({ ...data, robotID: text })} // Delete line 
                 value={data.robotID}
               />
               <TextInput
                 style={styles.input}
-                onChangeText={(text) => setData({ ...data, fieldID: text })}
+                onChangeText={(text) => setData({ ...data, fieldID: text })} // Delete line
                 value={data.fieldID}
               />
               <TextInput
