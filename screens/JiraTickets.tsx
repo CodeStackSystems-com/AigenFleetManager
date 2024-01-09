@@ -111,9 +111,17 @@ const JiraTickets = () => {
 
   const handleIssueChange = (itemValue: string) => {
     if (itemValue !== "HW Issue") {
-      setData({ ...data, issueType: itemValue, hwReplaced: "" });
+      setData({ ...data, issueType: itemValue, hwReplaced: "", fru: "" });
     } else {
       setData({ ...data, issueType: itemValue });
+    }
+  };
+
+  const handleHwReplacedChange = (itemValue: string) => {
+    if (itemValue !== "Yes") {
+      setData({ ...data, hwReplaced: itemValue, fru: "" });
+    } else {
+      setData({ ...data, hwReplaced: itemValue });
     }
   };
 
@@ -254,7 +262,7 @@ const JiraTickets = () => {
                       { label: "Yes", value: "Yes" },
                       { label: "No", value: "No" }
                     ]}
-                    onChange={(itemValue) => setData({ ...data, hwReplaced: itemValue })}
+                    onChange={handleHwReplacedChange}
                   />
                   ) : null}
                 </View>
