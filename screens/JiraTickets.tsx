@@ -11,8 +11,8 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from "react-native";
-import { Picker } from "@react-native-picker/picker";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import MyDropdown from "../components/dropdown";
 
 interface Data {
   robotID: string;
@@ -127,6 +127,7 @@ const JiraTickets = () => {
             behavior={Platform.OS === "ios" ? "padding" : "height"}
             style={keyboardAvoidingContainer}
           ></KeyboardAvoidingView>
+
           <Text
             style={
               isKeyboardVisible
@@ -148,10 +149,26 @@ const JiraTickets = () => {
             {/* Left Column inside left column */}
 
             <View style={styles.leftLabels}>
-              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Robot ID</Text>
-              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Field ID</Text>
-              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Issue</Text>
-              <Text style={ isKeyboardVisible ? styles.shrinkedText : styles.text}>Description</Text>
+              <Text
+                style={isKeyboardVisible ? styles.shrinkedText : styles.text}
+              >
+                Robot ID
+              </Text>
+              <Text
+                style={isKeyboardVisible ? styles.shrinkedText : styles.text}
+              >
+                Field ID
+              </Text>
+              <Text
+                style={isKeyboardVisible ? styles.shrinkedText : styles.text}
+              >
+                Issue
+              </Text>
+              <Text
+                style={isKeyboardVisible ? styles.shrinkedText : styles.text}
+              >
+                Description
+              </Text>
             </View>
 
             {/* Right Column inside left column */}
@@ -173,7 +190,9 @@ const JiraTickets = () => {
                 value={data.issue}
               />
               <TextInput
-                style={isKeyboardVisible ? styles.shrinkedDesc : styles.descInput}
+                style={
+                  isKeyboardVisible ? styles.shrinkedDesc : styles.descInput
+                }
                 multiline
                 numberOfLines={4} // Set the number of lines you want to display
                 textAlignVertical="top"
@@ -214,154 +233,63 @@ const JiraTickets = () => {
             {/* Right Column inside right column */}
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
               <View style={styles.rightInputs}>
-                <Picker
-                  selectedValue={data.issueType}
-                  style={styles.dropdown}
-                  onValueChange={(itemValue: string) =>
-                    handleIssueChange(itemValue)
-                  }
-                >
-                  <Picker.Item
-                    label="Select option"
-                    value="Select option"
-                    style={styles.option}
-                    enabled={false}
-                  />
-                  {/* Placeholder */}
-                  <Picker.Item
-                    label="Stuck/Obstacle"
-                    value="Stuck/Obstacle"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="HW Issue"
-                    value="HW Issue"
-                    style={styles.option}
-                  />
-                  <Picker.Item
-                    label="Suspected SW"
-                    value="Suspected SW"
-                    style={styles.option}
-                  />
-                </Picker>
+                
+
+                <MyDropdown
+                  options={[
+                    { label: "Stuck/Obstacle", value: "Stuck/Obstacle" },
+                    { label: "HW Issue", value: "HW Issue" },
+                    { label: "Suspected SW", value: "Suspected SW" },
+                  ]}
+                  onChange={handleIssueChange}
+                />
 
                 {/* If issue type is HW Issue, show hw replaced picker */}
 
                 <View>
                   {data.issueType === "HW Issue" ? (
-                    <Picker
-                      style={styles.dropdown}
-                      selectedValue={data.hwReplaced}
-                      onValueChange={(itemValue: string, itemIndex: number) => {
-                        setData({ ...data, hwReplaced: itemValue });
-                      }}
-                    >
-                      <Picker.Item
-                        label="Select option"
-                        value="Select option"
-                        style={styles.option}
-                        enabled={false}
-                      />
-                      <Picker.Item
-                        label="Yes"
-                        value="Yes"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="No"
-                        value="No"
-                        style={styles.option}
-                      />
-                    </Picker>
+                    
+                    <MyDropdown
+                    options={[
+                      { label: "Yes", value: "Yes" },
+                      { label: "No", value: "No" }
+                    ]}
+                    onChange={(itemValue) => setData({ ...data, hwReplaced: itemValue })}
+                  />
                   ) : null}
                 </View>
 
                 {/* If HW Replaced is yes, show FRU dropdown */}
                 <View>
                   {data.hwReplaced === "Yes" ? (
-                    <Picker
-                      style={styles.dropdown}
-                      selectedValue={data.fru}
-                      onValueChange={(itemValue: string) =>
-                        setData({ ...data, fru: itemValue })
-                      }
-                    >
-                      <Picker.Item
-                        label="Select option"
-                        value="Select option"
-                        style={styles.option}
-                        enabled={false}
-                      />
-                      <Picker.Item
-                        label="Arm Assembly"
-                        value="Arm Assembly"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Arm tip"
-                        value="Arm tip"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Battery"
-                        value="Battery"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Central enclosure"
-                        value="Central enclosure"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Harness"
-                        value="Harness"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Payload"
-                        value="Payload"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Side assembly"
-                        value="Side assembly"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Solar assembly"
-                        value="Solar assembly"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Wheels with motors"
-                        value="Wheels with motors"
-                        style={styles.option}
-                      />
-                      <Picker.Item
-                        label="Other"
-                        value="Other"
-                        style={styles.option}
-                      />
-                    </Picker>
+                    
+                    <MyDropdown
+                    options={[
+                      { label: "Arm Assembly", value: "Arm Assembly" },
+                      { label: "Arm tip", value: "Arm tip" },
+                      { label: "Battery", value: "Battery" },
+                      { label: "Central enclosure", value: "Central enclosure" },
+                      { label: "Harness", value: "Harness" },
+                      { label: "Payload", value: "Payload" },
+                      { label: "Side assembly", value: "Side assembly" },
+                      { label: "Solar assembly", value: "Solar assembly" },
+                      { label: "Wheels with motors", value: "Wheels with motors" },
+                      { label: "Other", value: "Other" },
+                    ]}
+                    onChange={(itemValue) => setData({ ...data, fru: itemValue })}
+                  />
                   ) : null}
                 </View>
 
-                <Picker
-                  style={styles.dropdown}
-                  selectedValue={data.recovered}
-                  onValueChange={(itemValue: string) =>
-                    setData({ ...data, recovered: itemValue })
-                  }
-                >
-                  <Picker.Item
-                    label="Select option"
-                    value="Select option"
-                    style={styles.option}
-                    enabled={false}
+                <MyDropdown
+                    options={[
+                      { label: "Yes", value: "Yes" },
+                      { label: "No", value: "No" }
+                    ]}
+                    onChange={(itemValue) => setData({ ...data, recovered: itemValue })}
                   />
-                  <Picker.Item label="Yes" value="Yes" style={styles.option} />
-                  <Picker.Item label="No" value="No" style={styles.option} />
-                </Picker>
+
+                
 
                 <View>
                   {/* rest of the code */}
@@ -519,7 +447,7 @@ const styles = StyleSheet.create({
   rightText: {
     color: "#fff",
     fontSize: 25,
-    marginBottom: 50,
+    marginBottom: 30,
   },
 });
 
