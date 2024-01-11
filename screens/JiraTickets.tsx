@@ -13,7 +13,6 @@ import {
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MyDropdown from "../components/dropdown";
-import Modal from "react-native-modal";
 import jiraService from "../services/jiraService";
 import CustomModal from "../components/popUp";
 
@@ -103,9 +102,7 @@ const JiraTickets = () => {
         !data.issue ||
         !data.description ||
         !data.issueType ||
-        data.issueType === null ||
-        !data.recovered ||
-        data.recovered === null
+        !data.recovered
       ) {
         return false;
       }
@@ -114,15 +111,7 @@ const JiraTickets = () => {
         return false;
       }
 
-      if (data.issueType === "HW Issue" && data.hwReplaced === null) {
-        return false;
-      }
-
       if (data.hwReplaced === "Yes" && data.fru === "") {
-        return false;
-      }
-
-      if (data.hwReplaced === "Yes" && data.fru === null) {
         return false;
       }
 
