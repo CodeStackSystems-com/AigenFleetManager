@@ -13,6 +13,9 @@ import {
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MyDropdown from "../components/dropdown";
+import Modal from "react-native-modal";
+import jiraService from "../services/jiraService";
+import CustomModal from "../components/popUp";
 
 interface Data {
   robotID: string;
@@ -38,12 +41,22 @@ const JiraTickets = () => {
   });
 
   const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
+  const [isDataValid, setIsDataValid] = React.useState(false);
+  const [errorModalVisible, setErrorModalVisible] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState("");
+  const [successModalVisible, setSuccessModalVisible] = React.useState(false);
+  const [dropdownKey, setDropdownKey] = React.useState(0);
+
+  React.useEffect(() => {
+    if (successModalVisible) {
+      // Increment the dropdownKey to trigger a re-render of dropdowns
+      setDropdownKey((prevKey) => prevKey + 1);
+    }
+  }, [successModalVisible]);
 
   const keyboardAvoidingContainer = {
     marginTop: isKeyboardVisible ? -110 : 0,
   };
-
-  const [isDataValid, setIsDataValid] = React.useState(false);
 
   const backgroundColor = React.useRef(new Animated.Value(0)).current;
 
@@ -90,7 +103,9 @@ const JiraTickets = () => {
         !data.issue ||
         !data.description ||
         !data.issueType ||
-        !data.recovered
+        data.issueType === null ||
+        !data.recovered ||
+        data.recovered === null
       ) {
         return false;
       }
@@ -99,7 +114,15 @@ const JiraTickets = () => {
         return false;
       }
 
+      if (data.issueType === "HW Issue" && data.hwReplaced === null) {
+        return false;
+      }
+
       if (data.hwReplaced === "Yes" && data.fru === "") {
+        return false;
+      }
+
+      if (data.hwReplaced === "Yes" && data.fru === null) {
         return false;
       }
 
@@ -108,6 +131,53 @@ const JiraTickets = () => {
 
     setIsDataValid(checkData());
   }, [data]);
+
+  const handleJiraIssueCreation = async (data: Data) => {
+    try {
+      // Check if data is valid
+      if (!isDataValid) {
+        setErrorMessage("Please fill out all fields before continuing.");
+        setErrorModalVisible(true);
+        return;
+      }
+      // Attempt to create Jira issue
+      const result = await jiraService.createJiraIssue(data);
+
+      if (result.success) {
+        // The API call was successful, you can perform any additional actions here if needed.
+        // For example, you can display a success message to the user.
+        setSuccessModalVisible(true);
+        // Clear the form data after successful submission if needed
+        setData({
+          robotID: "",
+          fieldID: "",
+          issue: "",
+          description: "",
+          issueType: "",
+          hwReplaced: "",
+          recovered: "",
+          fru: "",
+        });
+      } else {
+        // The API call failed, display an error message
+        setErrorMessage(`Failed to create ticket, something went wrong.`);
+        setErrorModalVisible(true);
+      }
+    } catch (error) {
+      // Handle unexpected errors
+      console.error("Unexpected Error:", error);
+      setErrorMessage("An unexpected error occurred.");
+      setErrorModalVisible(true);
+    }
+  };
+
+  const handleCloseErrorModal = () => {
+    setErrorModalVisible(false);
+  };
+
+  const handleCloseSuccessModal = () => {
+    setSuccessModalVisible(false);
+  };
 
   const handleIssueChange = (itemValue: string) => {
     if (itemValue !== "HW Issue") {
@@ -240,9 +310,7 @@ const JiraTickets = () => {
 
             {/* Right Column inside right column */}
             <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-              <View style={styles.rightInputs}>
-                
-
+              <View key={dropdownKey} style={styles.rightInputs}>
                 <MyDropdown
                   options={[
                     { label: "Stuck/Obstacle", value: "Stuck/Obstacle" },
@@ -256,48 +324,54 @@ const JiraTickets = () => {
 
                 <View>
                   {data.issueType === "HW Issue" ? (
-                    
                     <MyDropdown
-                    options={[
-                      { label: "Yes", value: "Yes" },
-                      { label: "No", value: "No" }
-                    ]}
-                    onChange={handleHwReplacedChange}
-                  />
+                      options={[
+                        { label: "Yes", value: "Yes" },
+                        { label: "No", value: "No" },
+                      ]}
+                      onChange={handleHwReplacedChange}
+                    />
                   ) : null}
                 </View>
 
                 {/* If HW Replaced is yes, show FRU dropdown */}
                 <View>
                   {data.hwReplaced === "Yes" ? (
-                    
                     <MyDropdown
-                    options={[
-                      { label: "Arm Assembly", value: "Arm Assembly" },
-                      { label: "Arm tip", value: "Arm tip" },
-                      { label: "Battery", value: "Battery" },
-                      { label: "Central enclosure", value: "Central enclosure" },
-                      { label: "Harness", value: "Harness" },
-                      { label: "Payload", value: "Payload" },
-                      { label: "Side assembly", value: "Side assembly" },
-                      { label: "Solar assembly", value: "Solar assembly" },
-                      { label: "Wheels with motors", value: "Wheels with motors" },
-                      { label: "Other", value: "Other" },
-                    ]}
-                    onChange={(itemValue) => setData({ ...data, fru: itemValue })}
-                  />
+                      options={[
+                        { label: "Arm Assembly", value: "Arm Assembly" },
+                        { label: "Arm tip", value: "Arm tip" },
+                        { label: "Battery", value: "Battery" },
+                        {
+                          label: "Central enclosure",
+                          value: "Central enclosure",
+                        },
+                        { label: "Harness", value: "Harness" },
+                        { label: "Payload", value: "Payload" },
+                        { label: "Side assembly", value: "Side assembly" },
+                        { label: "Solar assembly", value: "Solar assembly" },
+                        {
+                          label: "Wheels with motors",
+                          value: "Wheels with motors",
+                        },
+                        { label: "Other", value: "Other" },
+                      ]}
+                      onChange={(itemValue) =>
+                        setData({ ...data, fru: itemValue })
+                      }
+                    />
                   ) : null}
                 </View>
 
                 <MyDropdown
-                    options={[
-                      { label: "Yes", value: "Yes" },
-                      { label: "No", value: "No" }
-                    ]}
-                    onChange={(itemValue) => setData({ ...data, recovered: itemValue })}
-                  />
-
-                
+                  options={[
+                    { label: "Yes", value: "Yes" },
+                    { label: "No", value: "No" },
+                  ]}
+                  onChange={(itemValue) =>
+                    setData({ ...data, recovered: itemValue })
+                  }
+                />
 
                 <View>
                   {/* rest of the code */}
@@ -318,8 +392,7 @@ const JiraTickets = () => {
                   >
                     <TouchableOpacity
                       onPress={() => {
-                        // Handle button press
-                        // This is where you can add logic to submit the form or perform other actions
+                        handleJiraIssueCreation(data);
                       }}
                     >
                       <Text
@@ -335,6 +408,19 @@ const JiraTickets = () => {
                       </Text>
                     </TouchableOpacity>
                   </Animated.View>
+
+                  {/* Error Modal */}
+                  <CustomModal
+                    isVisible={errorModalVisible}
+                    onClose={handleCloseErrorModal}
+                    message={errorMessage}
+                  />
+                  {/* Success Modal */}
+                  <CustomModal
+                    isVisible={successModalVisible}
+                    onClose={handleCloseSuccessModal}
+                    message="Ticket has been submitted successfully."
+                  />
                 </View>
               </View>
             </TouchableWithoutFeedback>
@@ -456,6 +542,20 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 25,
     marginBottom: 30,
+  },
+  errorModal: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  errorModalText: {
+    fontSize: 18,
+    marginBottom: 20,
+  },
+  closeModalText: {
+    fontSize: 16,
+    color: "#007BFF",
   },
 });
 

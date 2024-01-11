@@ -7,6 +7,7 @@ import {
   TouchableWithoutFeedback,
   FlatList,
   StyleSheet,
+  Keyboard,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 
@@ -30,8 +31,9 @@ const MyDropdown: React.FC<MyDropdownProps> = ({ options, onChange }) => {
 
   const handleSelect = (option: Option) => {
     setSelectedValue(option);
-    onChange(option.value); // Call the onChange callback with the selected value
+    onChange(option.value);
     toggleModal();
+    Keyboard.dismiss();
   };
 
   const renderItem = ({ item, index }: { item: Option; index: number }) => (
@@ -96,19 +98,17 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingVertical: 10,
   },
   itemLabel: {
     fontSize: 20,
     marginBottom: 10,
-    paddingTop: 10,
   },
   itemBorder: {
     borderColor: "#000",
     borderTopWidth: 1,
     fontSize: 20,
     marginBottom: 10,
-    paddingTop: 20,
+    paddingTop: 10,
   },
   selectedValueContainer: {
     flexDirection: "row",
