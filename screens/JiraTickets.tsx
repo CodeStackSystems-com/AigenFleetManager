@@ -13,6 +13,8 @@ import {
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MyDropdown from "../components/dropdown";
+import {NativeModules} from 'react-native';
+const {RobotManager} = NativeModules;
 
 interface Data {
   robotID: string;
@@ -46,6 +48,20 @@ const JiraTickets = () => {
   const [isDataValid, setIsDataValid] = React.useState(false);
 
   const backgroundColor = React.useRef(new Animated.Value(0)).current;
+
+  const getRobotInfo = async () => {
+    const robotInfoString = await RobotManager.getRobotHeartbeat();
+    if(robotInfoString){
+      const robotInfoFormat = robotInfoString.replace('/robot/heartbeat:', '');
+      const robotInfo = JSON.parse(robotInfoFormat);
+  
+      setData((state) => ({...state, robotID: robotInfo.id, fieldID: robotInfo.name}))
+    }
+  }
+
+  React.useEffect(() => {
+    getRobotInfo();
+  }, [])
 
   React.useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
