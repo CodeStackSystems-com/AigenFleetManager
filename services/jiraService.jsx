@@ -131,7 +131,7 @@ const createJiraIssue = async (formData) => {
 
     //IMPORTANT - Change IP Address for your local machine running the backend before you run this code
     //IMPORTANT - Make sure 'ml-webapp-backend' is running on port 3000 before you run this code
-    const result = await fetch(`http://YOUR.IPV4.GOES.HERE:3000/jira/createJiraIssue`, {
+    const result = await fetch(`https://api.aigen.io/jira/createJiraIssue`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
