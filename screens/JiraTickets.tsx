@@ -13,11 +13,10 @@ import {
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MyDropdown from "../components/dropdown";
-import {NativeModules} from 'react-native';
-const {RobotManager} = NativeModules;
+import { NativeModules } from "react-native";
+const { RobotManager } = NativeModules;
 import jiraService from "../services/jiraService";
 import CustomModal from "../components/popUp";
-
 
 interface Data {
   robotID: string;
@@ -64,17 +63,21 @@ const JiraTickets = () => {
 
   const getRobotInfo = async () => {
     const robotInfoString = await RobotManager.getRobotHeartbeat();
-    if(robotInfoString){
-      const robotInfoFormat = robotInfoString.replace('/robot/heartbeat:', '');
+    if (robotInfoString) {
+      const robotInfoFormat = robotInfoString.replace("/robot/heartbeat:", "");
       const robotInfo = JSON.parse(robotInfoFormat);
-  
-      setData((state) => ({...state, robotID: robotInfo.id, fieldID: robotInfo.name}))
+
+      setData((state) => ({
+        ...state,
+        robotID: robotInfo.id,
+        fieldID: robotInfo.name,
+      }));
     }
-  }
+  };
 
   React.useEffect(() => {
     getRobotInfo();
-  }, [])
+  }, []);
 
   React.useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -321,7 +324,7 @@ const JiraTickets = () => {
                   options={[
                     { label: "Stuck/Obstacle", value: "Stuck/Obstacle" },
                     { label: "HW Issue", value: "HW Issue" },
-                    { label: "Suspected SW", value: "Suspected SW" },
+                    { label: "Suspect SW", value: "Suspect SW" },
                   ]}
                   onChange={handleIssueChange}
                 />
