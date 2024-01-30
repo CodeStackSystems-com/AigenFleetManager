@@ -10,13 +10,18 @@ import {
   Platform,
   Keyboard,
   TouchableWithoutFeedback,
+  ActivityIndicator,
 } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import MyDropdown from "../components/dropdown";
-import { NativeModules } from "react-native";
-const { RobotManager } = NativeModules;
+import { NativeModules, Image } from "react-native";
 import jiraService from "../services/jiraService";
 import CustomModal from "../components/popUp";
+import * as ImagePicker from "expo-image-picker";
+import CustomImageModal from "../components/imageModal";
+import attachmentService from "../services/attachmentToJiraIssue";
+
+const { RobotManager } = NativeModules;
 
 interface Data {
   robotID: string;
@@ -27,6 +32,7 @@ interface Data {
   hwReplaced: string;
   recovered: string;
   fru: string;
+  image: string;
 }
 
 const JiraTickets = () => {
@@ -39,6 +45,7 @@ const JiraTickets = () => {
     hwReplaced: "",
     recovered: "",
     fru: "",
+    image: "",
   });
 
   const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
@@ -47,6 +54,9 @@ const JiraTickets = () => {
   const [errorMessage, setErrorMessage] = React.useState("");
   const [successModalVisible, setSuccessModalVisible] = React.useState(false);
   const [dropdownKey, setDropdownKey] = React.useState(0);
+  const [fileName, setFileName] = React.useState("");
+  const [imageModalVisible, setImageModalVisible] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (successModalVisible) {
@@ -60,6 +70,14 @@ const JiraTickets = () => {
   };
 
   const backgroundColor = React.useRef(new Animated.Value(0)).current;
+
+  const openImageModal = () => {
+    setImageModalVisible(true);
+  };
+
+  const closeImageModal = () => {
+    setImageModalVisible(false);
+  };
 
   const getRobotInfo = async () => {
     const robotInfoString = await RobotManager.getRobotHeartbeat();
@@ -149,12 +167,36 @@ const JiraTickets = () => {
         setErrorModalVisible(true);
         return;
       }
+
+      //Change loading state to true, this is for the loading spinner
+      setLoading(true);
+
       // Attempt to create Jira issue
       const result = await jiraService.createJiraIssue(data);
 
       if (result.success) {
         // The API call was successful, you can perform any additional actions here if needed.
         // For example, you can display a success message to the user.
+
+        // If there is an image, call the other service to attach it to the issue
+        if (data.image) {
+          const attachmentResult =
+            await attachmentService.attachImageToJiraIssue(
+              data.image,
+              result.issueKey
+            );
+
+          if (attachmentResult?.success === false) {
+            setErrorMessage(
+              `Failed to attach image to ticket, something went wrong.`
+            );
+            setErrorModalVisible(true);
+          }
+        }
+
+        //set loading state to false, this is for the loading spinner
+        setLoading(false);
+
         setSuccessModalVisible(true);
         // Clear the form data after successful submission if needed
         setData({
@@ -166,8 +208,12 @@ const JiraTickets = () => {
           hwReplaced: "",
           recovered: "",
           fru: "",
+          image: "",
         });
       } else {
+        //set loading state to false, this is for the loading spinner
+        setLoading(false);
+
         // The API call failed, display an error message
         setErrorMessage(`Failed to create ticket, something went wrong.`);
         setErrorModalVisible(true);
@@ -203,6 +249,69 @@ const JiraTickets = () => {
       setData({ ...data, hwReplaced: itemValue });
     }
   };
+
+  const openCamera = async () => {
+    // Ask the user for the permission to access the camera
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("You've refused to allow this appp to access your camera!");
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({ base64: true });
+
+    // Explore the result
+    const fileName = result.assets && result.assets[0].uri.split("/").pop();
+
+    if (fileName) {
+      setFileName(fileName);
+      setData({ ...data, image: result.assets[0].base64 as string });
+      closeImageModal();
+    }
+  };
+
+  const pickImage = async () => {
+    // No permissions request is necessary for launching the image library
+    let result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
+      allowsEditing: true,
+      aspect: [4, 3],
+      quality: 1,
+      base64: true,
+    });
+
+    const fileName = result.assets && result.assets[0].uri.split("/").pop();
+
+    if (fileName) {
+      setFileName(fileName);
+      if (result.assets && result.assets.length > 0) {
+        setData({ ...data, image: result.assets[0].uri as string });
+      }
+      closeImageModal();
+    }
+  };
+
+  // Function to break the line after a certain number of characters
+  const breakLine = (text: string, charactersPerLine: number) => {
+    const maxCharacters = 50;
+
+    if (text.length <= charactersPerLine) {
+      const regex = new RegExp(`.{1,${charactersPerLine}}`, "g");
+      return text.match(regex)?.join("\n") || "";
+    }
+
+    if (text.length <= maxCharacters) {
+      const regex = new RegExp(`.{1,${charactersPerLine}}`, "g");
+      return text.match(regex)?.join("\n") || "";
+    }
+
+    const truncatedText = text.slice(0, maxCharacters - 3); // Leave space for three dots
+    return `${truncatedText}...`;
+  };
+
+  // Format the file name to break the line after 25 characters
+  const formattedFileName = breakLine(fileName, 25);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -256,6 +365,7 @@ const JiraTickets = () => {
               >
                 Description
               </Text>
+              <Text style={styles.imageText}>Image</Text>
             </View>
 
             {/* Right Column inside left column */}
@@ -286,6 +396,31 @@ const JiraTickets = () => {
                 onChangeText={(text) => setData({ ...data, description: text })}
                 value={data.description}
               />
+
+              <View
+                style={{
+                  flex: 1,
+                  alignItems: "center",
+                  justifyContent: "center",
+                  marginRight: 200,
+                  flexDirection: "row",
+                }}
+              >
+                <TouchableOpacity onPress={openImageModal}>
+                  <Image
+                    source={require("../assets/imageLogo.png")}
+                    style={{ width: 50, height: 50, marginRight: 10 }}
+                  />
+                </TouchableOpacity>
+                {data.image && (
+                  <View>
+                    <Text style={{ fontSize: 15, color: "#fff" }}>
+                      Image attached: {"\n"}
+                      {formattedFileName}
+                    </Text>
+                  </View>
+                )}
+              </View>
             </View>
           </View>
         </View>
@@ -401,7 +536,13 @@ const JiraTickets = () => {
                   >
                     <TouchableOpacity
                       onPress={() => {
-                        handleJiraIssueCreation(data);
+                        if (
+                          !loading &&
+                          successModalVisible === false &&
+                          errorModalVisible === false
+                        ) {
+                          handleJiraIssueCreation(data);
+                        }
                       }}
                     >
                       <Text
@@ -430,11 +571,25 @@ const JiraTickets = () => {
                     onClose={handleCloseSuccessModal}
                     message="Ticket has been submitted successfully."
                   />
+                  <CustomImageModal
+                    visible={imageModalVisible}
+                    onClose={closeImageModal}
+                    onSelectGallery={pickImage}
+                    onOpenCamera={openCamera}
+                  />
                 </View>
               </View>
             </TouchableWithoutFeedback>
           </View>
         </View>
+        {loading && (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size={125} color="#FF8A00" />
+            <Text style={{ marginTop: 10, color: "#FFF", fontSize: 40 }}>
+              Loading...
+            </Text>
+          </View>
+        )}
       </View>
     </TouchableWithoutFeedback>
   );
@@ -468,6 +623,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 25,
     paddingBottom: 15,
+  },
+  imageText: {
+    color: "#fff",
+    fontSize: 25,
+    paddingTop: 70,
   },
   log: {
     color: "#D9D9D9",
@@ -565,6 +725,20 @@ const styles = StyleSheet.create({
   closeModalText: {
     fontSize: 16,
     color: "#007BFF",
+  },
+  loadingContainer: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    marginLeft: -105,
+    marginTop: -70,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#1E1E1E",
+    padding: 20,
+    borderRadius: 10,
+    borderWidth: 3,
+    borderColor: "#D9D9D9",
   },
 });
 
