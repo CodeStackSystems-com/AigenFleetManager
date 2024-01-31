@@ -32,7 +32,7 @@ interface Data {
   hwReplaced: string;
   recovered: string;
   fru: string;
-  image: string;
+  images: string[];
 }
 
 const JiraTickets = () => {
@@ -45,7 +45,7 @@ const JiraTickets = () => {
     hwReplaced: "",
     recovered: "",
     fru: "",
-    image: "",
+    images: [],
   });
 
   const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
@@ -54,7 +54,6 @@ const JiraTickets = () => {
   const [errorMessage, setErrorMessage] = React.useState("");
   const [successModalVisible, setSuccessModalVisible] = React.useState(false);
   const [dropdownKey, setDropdownKey] = React.useState(0);
-  const [fileName, setFileName] = React.useState("");
   const [imageModalVisible, setImageModalVisible] = React.useState(false);
   const [loading, setLoading] = React.useState(false);
 
@@ -179,18 +178,20 @@ const JiraTickets = () => {
         // For example, you can display a success message to the user.
 
         // If there is an image, call the other service to attach it to the issue
-        if (data.image) {
-          const attachmentResult =
-            await attachmentService.attachImageToJiraIssue(
-              data.image,
-              result.issueKey
-            );
+        if (data.images.length > 0) {
+          for (let i = 0; i < data.images.length; i++) {
+            const attachmentResult =
+              await attachmentService.attachImageToJiraIssue(
+                data.images[i],
+                result.issueKey
+              );
 
-          if (attachmentResult?.success === false) {
-            setErrorMessage(
-              `Failed to attach image to ticket, something went wrong.`
-            );
-            setErrorModalVisible(true);
+            if (attachmentResult?.success === false) {
+              setErrorMessage(
+                `Failed to attach image to ticket, something went wrong.`
+              );
+              setErrorModalVisible(true);
+            }
           }
         }
 
@@ -208,7 +209,7 @@ const JiraTickets = () => {
           hwReplaced: "",
           recovered: "",
           fru: "",
-          image: "",
+          images: [],
         });
       } else {
         //set loading state to false, this is for the loading spinner
@@ -261,12 +262,8 @@ const JiraTickets = () => {
 
     const result = await ImagePicker.launchCameraAsync({ base64: true });
 
-    // Explore the result
-    const fileName = result.assets && result.assets[0].uri.split("/").pop();
-
-    if (fileName) {
-      setFileName(fileName);
-      setData({ ...data, image: result.assets[0].base64 as string });
+    if (result.assets && result.assets.length > 0) {
+      data.images.push(result.assets[0].base64 as string);
       closeImageModal();
     }
   };
@@ -275,43 +272,15 @@ const JiraTickets = () => {
     // No permissions request is necessary for launching the image library
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
       quality: 1,
       base64: true,
     });
 
-    const fileName = result.assets && result.assets[0].uri.split("/").pop();
-
-    if (fileName) {
-      setFileName(fileName);
-      if (result.assets && result.assets.length > 0) {
-        setData({ ...data, image: result.assets[0].uri as string });
-      }
+    if (result.assets && result.assets.length > 0) {
+      data.images.push(result.assets[0].base64 as string);
       closeImageModal();
     }
   };
-
-  // Function to break the line after a certain number of characters
-  const breakLine = (text: string, charactersPerLine: number) => {
-    const maxCharacters = 50;
-
-    if (text.length <= charactersPerLine) {
-      const regex = new RegExp(`.{1,${charactersPerLine}}`, "g");
-      return text.match(regex)?.join("\n") || "";
-    }
-
-    if (text.length <= maxCharacters) {
-      const regex = new RegExp(`.{1,${charactersPerLine}}`, "g");
-      return text.match(regex)?.join("\n") || "";
-    }
-
-    const truncatedText = text.slice(0, maxCharacters - 3); // Leave space for three dots
-    return `${truncatedText}...`;
-  };
-
-  // Format the file name to break the line after 25 characters
-  const formattedFileName = breakLine(fileName, 25);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -365,7 +334,9 @@ const JiraTickets = () => {
               >
                 Description
               </Text>
-              <Text style={styles.imageText}>Image</Text>
+              <Text style={styles.imageText}>
+                {data.images.length > 1 ? "Images" : "Image"}
+              </Text>
             </View>
 
             {/* Right Column inside left column */}
@@ -412,11 +383,12 @@ const JiraTickets = () => {
                     style={{ width: 50, height: 50, marginRight: 10 }}
                   />
                 </TouchableOpacity>
-                {data.image && (
+                {data.images && (
                   <View>
                     <Text style={{ fontSize: 15, color: "#fff" }}>
-                      Image attached: {"\n"}
-                      {formattedFileName}
+                      {data.images.length === 1 && "1 image selected"}
+                      {data.images.length > 1 &&
+                        `${data.images.length} images selected`}
                     </Text>
                   </View>
                 )}
