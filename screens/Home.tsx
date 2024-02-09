@@ -6,7 +6,7 @@ const Home = () => {
   const navigation = useNavigation();
 
   const goToJiraTickets = () => {
-    navigation.navigate("JiraTickets" as never);
+    navigation.navigate("InitialJiraView" as never);
   };
 
   return (
