@@ -1,0 +1,37 @@
+{
+  "id": "011",
+  "name": "wanobi-011",
+  "msg": 1993,
+  "ip": "166.167.59.11",
+  "lat": 32.8069184,
+  "lon": -115.4452365,
+  "speed": -0.00265035149641335,
+  "cpu": 92.6,
+  "cpu_temp": 33.0,
+  "mem": 60.0,
+  "charge_left": 0.0,
+  "charge_right": 0.0,
+  "vbat_left": 0.0,
+  "vbat_right": 0.0,
+  "current_left": 0.0,
+  "current_right": 0.0,
+  "temp_left": 0.0,
+  "temp_right": 0.0,
+  "record": 15,
+  "estop": 1,
+  "model_names": [
+    "2023-12-11_TL-DREC150-s1-split",
+    "2023-09-18_triangles",
+    "2023-10-27_target-circles",
+    "2023-11-30_ID-ND-40k_all-split_640x360"
+  ],
+  "current_model": "2023-12-11_TL-DREC150-s1-split",
+  "event": {
+    "measure_name": "RTK Comm",
+    "measure_value": {
+      "level": "Warning",
+      "value": "Poor signal quality"
+    },
+    "timestamp": "2024-02-08T12:00:00Z"
+  }
+}

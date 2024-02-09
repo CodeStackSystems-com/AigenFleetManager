@@ -20,33 +20,42 @@ import CustomModal from "../components/popUp";
 import * as ImagePicker from "expo-image-picker";
 import CustomImageModal from "../components/imageModal";
 import attachmentService from "../services/attachmentToJiraIssue";
+import { RouteProp } from "@react-navigation/native";
+import { RootStackParamList } from "../navigation";
+import { Data } from "../types/data";
 
-const { RobotManager } = NativeModules;
+type JiraTicketsRouteProp = RouteProp<RootStackParamList, "JiraTickets">;
 
-interface Data {
-  robotID: string;
-  fieldID: string;
-  issue: string;
-  description: string;
-  issueType: string;
-  hwReplaced: string;
-  recovered: string;
-  fru: string;
-  images: string[];
+interface Props {
+  route: JiraTicketsRouteProp;
 }
 
-const JiraTickets = () => {
+const JiraTickets: React.FC<Props> = ({ route }) => {
+  const formData: Data = route.params.formData;
+
   const [data, setData] = React.useState<Data>({
-    robotID: "",
-    fieldID: "",
-    issue: "",
-    description: "",
+    robotID: formData.robotID || "",
+    fieldID: formData.fieldID || "",
+    issue: formData.issue || "",
+    description: formData.description || "",
     issueType: "",
     hwReplaced: "",
     recovered: "",
     fru: "",
-    images: [],
+    images: formData.images || [],
   });
+
+  // UseEffect hook to update state when props change
+  React.useEffect(() => {
+    setData({
+      ...data,
+      robotID: formData.robotID || "",
+      fieldID: formData.fieldID || "",
+      issue: formData.issue || "",
+      description: formData.description || "",
+      images: formData.images || [],
+    });
+  }, [formData]);
 
   const [isKeyboardVisible, setKeyboardVisible] = React.useState(false);
   const [isDataValid, setIsDataValid] = React.useState(false);
@@ -77,24 +86,6 @@ const JiraTickets = () => {
   const closeImageModal = () => {
     setImageModalVisible(false);
   };
-
-  const getRobotInfo = async () => {
-    const robotInfoString = await RobotManager.getRobotHeartbeat();
-    if (robotInfoString) {
-      const robotInfoFormat = robotInfoString.replace("/robot/heartbeat:", "");
-      const robotInfo = JSON.parse(robotInfoFormat);
-
-      setData((state) => ({
-        ...state,
-        robotID: robotInfo.id,
-        fieldID: robotInfo.name,
-      }));
-    }
-  };
-
-  React.useEffect(() => {
-    getRobotInfo();
-  }, []);
 
   React.useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
@@ -178,7 +169,7 @@ const JiraTickets = () => {
         // For example, you can display a success message to the user.
 
         // If there is an image, call the other service to attach it to the issue
-        if (data.images.length > 0) {
+        if (data.images && data.images.length > 0) {
           for (let i = 0; i < data.images.length; i++) {
             const attachmentResult =
               await attachmentService.attachImageToJiraIssue(
@@ -262,7 +253,7 @@ const JiraTickets = () => {
 
     const result = await ImagePicker.launchCameraAsync({ base64: true });
 
-    if (result.assets && result.assets.length > 0) {
+    if (data.images && result.assets && result.assets.length > 0) {
       data.images.push(result.assets[0].base64 as string);
       closeImageModal();
     }
@@ -276,7 +267,7 @@ const JiraTickets = () => {
       base64: true,
     });
 
-    if (result.assets && result.assets.length > 0) {
+    if (data.images && result.assets && result.assets.length > 0) {
       data.images.push(result.assets[0].base64 as string);
       closeImageModal();
     }
@@ -335,7 +326,7 @@ const JiraTickets = () => {
                 Description
               </Text>
               <Text style={styles.imageText}>
-                {data.images.length > 1 ? "Images" : "Image"}
+                {data.images?.length ?? 0 > 1 ? "Images" : "Image"}
               </Text>
             </View>
 
