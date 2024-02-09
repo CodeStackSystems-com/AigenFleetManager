@@ -7,7 +7,6 @@ const getJiraIssues = async () => {
       },
     });
     const data = await response.json();
-    console.log("after back end call");
     return data;
   } catch (error) {}
 };
